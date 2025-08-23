@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.views import View
+from .models import Chamado
 # Create your views here.
 
 class ChamadosView(View):
