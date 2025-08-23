@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
 from django.views import View 
 from django.shortcuts import render
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 
 User = get_user_model()
 class LoginView(View):
@@ -56,4 +56,12 @@ class RegisterView(View):
         user.set_password(password)
         user.save()
 
+        return HttpResponseRedirect('/autenticacao/login/')
+    
+
+
+class LogoutView(View):
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
         return HttpResponseRedirect('/autenticacao/login/')

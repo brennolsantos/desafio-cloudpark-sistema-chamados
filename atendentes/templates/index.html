@@ -3,4 +3,10 @@
 {% block content %}
   <h1>Painel de Atendentes</h1>
   <p>Bem-vindo ao sistema de chamados!</p>
+  {% if request.user.is_authenticated %}
+    <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/'">Ver Chamados</button>
+    <button class="btn btn-secondary" onclick="window.location.href='/autenticacao/logout/'">Logout</button>
+  {% else %}
+    <button class="btn btn-primary" onclick="window.location.href='/autenticacao/login/'">Login</button>
+  {% endif %}
 {% endblock %}
