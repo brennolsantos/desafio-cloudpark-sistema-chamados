@@ -150,3 +150,5 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+AUTH_USER_MODEL = 'tecnicos.CustomUser'
