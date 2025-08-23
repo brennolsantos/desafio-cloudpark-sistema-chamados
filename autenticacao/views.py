@@ -52,7 +52,7 @@ class RegisterView(View):
         user = User()
         user.email = email
         user.username = username
-        user.save()
+        user.tipo_user = 'atendente'
         user.set_password(password)
         user.save()
 
