@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'atendentes',
-    'tecnicos'
+    'tecnicos',
+    'autenticacao'
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,5 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+AUTH_USER_MODEL = 'autenticacao.CustomUser'
