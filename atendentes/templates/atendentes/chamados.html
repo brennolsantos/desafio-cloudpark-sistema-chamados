@@ -4,12 +4,50 @@
 <div class="row justify-content-center mt-1">
     <h5 class="h5 col-6 text-center">Lista de Chamados</h5>
 </div>
-<div class="row justify-content-center mt-1">
-    <div class="card col-6 mt-3">
-        <h3 class="card-header">Chamado 1</h3>
-        <div class="card-body">
-            <p class="card-text">Descrição do chamado 1.</p>
-        </div>
+<div class="row justify-content-center mt-3">
+    <div class="col-6 text-center">
+        <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/novo'">Novo Chamado</button>
     </div>
 </div>
+
+<div class="row justify-content-center mt-3">
+    <div class="col-6 text-center">
+        <select id="statusFilter" class="form-select">
+            <option disabled selected value>Filtrar por Status</option>
+            <option value="aberto">Abertos</option>
+            <option value="ematendimento">Em Atendimento</option>
+            <option value="resolvido">Resolvidos</option>
+            <option value="cancelado">Cancelados</option>
+        </select>
+    </div>
+    <button class="btn btn-secondary  col-1 " onclick="filtrar()">Filtrar</button>
+</div>
+
+{% for chamado in chamados %}
+<div class="row justify-content-center mt-1">
+    <div class="card col-6 mt-3">
+        <h3 class="card-header {% if chamado.prioridade == 'alta' %}bg-danger text-white{% elif chamado.prioridade == 'media' %}bg-warning{% else %}bg-success{% endif %}">{{ chamado.titulo }}</h3>
+        <div class="card-body">
+            <p class="card-text">{% if chamado.descricao %}{{ chamado.descricao }}{% endif %}</p>
+            <p class="card-text"><small class="text-muted">Setor: {{ chamado.setor }}</small></p>
+            <p class="card-text"><small class="text-muted">Prioridade: {{ chamado.get_prioridade_display }}</small></p>
+            <p class="card-text"><small class="text-muted">Criado em: {{ chamado.data_criacao }}</small></p>
+            <p class="card-text"><small class="text-muted">Status: {{ chamado.get_status_display }}</small></p>
+            <p class="card-text"><small class="text-muted">Criado por: {{ chamado.usuario.username }}</small></p>
+        </div>
+        <div class="card-footer text-end">
+            <button class="btn btn-secondary" style="margin-right: 20px" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/'">Visualizar Chamado</button>
+            <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar/'">Editar Chamado</button>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filtrar() {
+        var status = document.getElementById("statusFilter").value;
+        window.location.href = "{% url 'atendentes:chamados' %}?status=" + status;
+    }
+</script>
 {% endblock %}
