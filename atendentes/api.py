@@ -9,13 +9,13 @@ class ChamadoAPIView(APIView):
     def get(self, request, *args, **kwargs):
         id = kwargs.get('id')
         if id is not None:
-            chamado = Chamado.objects.filter(id=id, usuario=request.user).first()
+            chamado = Chamado.objects.filter(id=id).first()
             if chamado:
                 serializer = ChamadoSerializer(chamado)
                 return Response({'chamado': serializer.data})
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-        chamados = Chamado.objects.filter(usuario=request.user)
+        chamados = Chamado.objects.all()
         serializer = ChamadoSerializer(chamados, many=True)
         print(f'CHAMADOS: {serializer.data}')
         return Response({'chamados': serializer.data})
