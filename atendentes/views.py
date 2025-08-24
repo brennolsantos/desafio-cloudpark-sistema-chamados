@@ -2,7 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.views import View
 from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+try:
+    from channels.layers import get_channel_layer
+except ImportError:
+    # Fallback para versões mais antigas
+    from channels import channel_layers
+    get_channel_layer = channel_layers.get_channel_layer
 
 from .models import Chamado
 # Create your views here.
