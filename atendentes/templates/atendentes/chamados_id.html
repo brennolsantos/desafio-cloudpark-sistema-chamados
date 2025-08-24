@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center mt-6">
-    <div class="card col-6 mt-3">
+    <div class="card col-lg-6 col-md-12 col-sm-12 mt-3">
         <h3 class="card-header {% if chamado.prioridade == 'alta' %}bg-danger text-white{% elif chamado.prioridade == 'media' %}bg-warning{% else %}bg-success{% endif %}">{{ chamado.titulo }}</h3>
         <div class="card-body">
             <p class="card-text">{% if chamado.descricao %}{{ chamado.descricao }}{% endif %}</p>
@@ -13,9 +13,9 @@
             <p class="card-text"><small class="text-muted">Criado por: {{ chamado.usuario.username }}</small></p>
         </div>
         <div class="card-footer text-end">
-            <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar/'">Editar Chamado</button>
-            <button class="btn btn-danger" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/deletar/'">Deletar Chamado</button>
-            <button class="btn btn-secondary" style="margin-right: 20px" onclick="window.location.href='/atendentes/chamados/'">Voltar</button>
+            <button class="btn btn-primary mt-1" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar/'">Editar</button>
+            <button class="btn btn-danger mt-1" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/deletar/'">Deletar</button>
+            <button class="btn btn-secondary mt-1" style="margin-right: 20px" onclick="window.location.href='/atendentes/chamados/'">Voltar</button>
     </div>
 </div>
 {% endblock %}

@@ -10,9 +10,12 @@ class ChamadosView(View):
         context = {}
         status = request.GET.get('status')  
         
-        if request.user.tipo_user != 'atendente' or request.user.is_authenticated == False:
+        if request.user.is_authenticated == False:
             return HttpResponseRedirect('/autenticacao/login/')
         
+        if request.user.tipo_user != 'atendente':
+            return HttpResponseRedirect('/autenticacao/login/')
+
         if id is not None:
             try:
                 chamado = Chamado.objects.get(id=id)
