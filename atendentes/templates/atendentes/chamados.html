@@ -32,14 +32,14 @@
                 <th scope="col">Ações</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="table-chamados">
         {% endif %}
             {% for chamado in chamados %}
-            <tr>
-                <td>{{ chamado.id }}</td>
-                <td>{{ chamado.titulo }}</td>
-                <td style="color: {% if chamado.prioridade == 'alta' %} red {% elif chamado.prioridade == 'media' %} orange {% else %} green {% endif %};">{{ chamado.get_prioridade_display }}</td>
-                <td>{{ chamado.get_status_display }}</td>
+            <tr id="chamado_{{ chamado.id }}">
+                <td id="id_{{ chamado.id }}">{{ chamado.id }}</td>
+                <td id="titulo_{{ chamado.titulo }}">{{ chamado.titulo }}</td>
+                <td id="prioridade_{{ chamado.prioridade }}" style="color: {% if chamado.prioridade == 'alta' %} red {% elif chamado.prioridade == 'media' %} orange {% else %} green {% endif %};">{{ chamado.get_prioridade_display }}</td>
+                <td id="status_{{ chamado.status }}">{{ chamado.get_status_display }}</td>
                 <td>
                     <button class="btn btn-light btn-sm" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}'"><i class="fa-solid fa-eye"></i></button>
                     <button class="btn btn-light btn-sm" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar'"><i class="fa-solid fa-pencil"></i></button>
@@ -62,6 +62,102 @@
 
 {% block scripts %}
 <script>
+    var username_websockets = "{{ username_websockets }}";
+    var chamados = [];
+
+    function getDisplayPrioridade(prioridade) {
+        switch (prioridade) {
+            case 'alta':
+                return 'Alta';
+            case 'media':
+                return 'Média';
+            case 'baixa':
+                return 'Baixa';
+            default:
+                return 'Desconhecida';
+        }
+    }
+
+    function getDisplayStatus(status) {
+        switch (status) {
+            case 'aberto':
+                return 'Aberto';
+            case 'ematendimento':
+                return 'Em Atendimento';
+            case 'resolvido':
+                return 'Resolvido';
+            case 'cancelado':
+                return 'Cancelado';
+            default:
+                return 'Desconhecido';
+        }
+    }
+
+    function render_chamados() {
+        var table = document.getElementById("table-chamados");
+        table.innerHTML = "";
+
+        for (var i = 0; i < chamados.length; i++) {
+            var chamado = chamados[i];
+            var row = document.createElement("tr");
+            row.id = "chamado_" + chamado.id;
+
+            var idCell = document.createElement("td");
+            idCell.id = "id_" + chamado.id;
+            idCell.innerHTML = chamado.id;
+            row.appendChild(idCell);
+
+            var tituloCell = document.createElement("td");
+            tituloCell.id = "titulo_" + chamado.id;
+            tituloCell.innerHTML = chamado.titulo;
+            row.appendChild(tituloCell);
+
+            var prioridadeCell = document.createElement("td");
+            prioridadeCell.id = "prioridade_" + chamado.id;
+            prioridadeCell.innerHTML = getDisplayPrioridade(chamado.prioridade);
+            prioridadeCell.style.color = (chamado.prioridade == 'alta') ? 'red' : (chamado.prioridade == 'media') ? 'orange' : 'green';
+            row.appendChild(prioridadeCell);
+
+            var statusCell = document.createElement("td");
+            statusCell.id = "status_" + chamado.id;
+            statusCell.innerHTML = getDisplayStatus(chamado.status);
+            row.appendChild(statusCell);
+
+            var acoesCell = document.createElement("td");
+            var viewButton = document.createElement("button");
+            viewButton.className = "btn btn-light btn-sm";
+            viewButton.onclick = (function(id) {
+                return function() {
+                    window.location.href = '/atendentes/chamados/' + id;
+                };
+            })(chamado.id);
+            viewButton.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            acoesCell.appendChild(viewButton);
+
+            var editButton = document.createElement("button");
+            editButton.className = "btn btn-light btn-sm";
+            editButton.onclick = (function(id) {
+                return function() {
+                    window.location.href = '/atendentes/chamados/' + id + '/editar';
+                };
+            })(chamado.id);
+            editButton.innerHTML = '<i class="fa-solid fa-pencil"></i>';
+            acoesCell.appendChild(editButton);
+
+            row.appendChild(acoesCell);
+            table.appendChild(row);
+        }
+    }
+
+    {% for chamado in chamados %}
+        chamados.push({
+            id: "{{ chamado.id }}",
+            titulo: "{{ chamado.titulo }}",
+            prioridade: "{{ chamado.prioridade }}",
+            status: "{{ chamado.status }}",
+        });
+    {% endfor %}
+
     function filtrar() {
         var status = document.getElementById("statusFilter").value;
 
@@ -74,5 +170,62 @@
             window.location.href = "{% url 'atendentes:chamados' %}?status=" + status;
         }
     }
+
+    const chamadoSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chamados/'
+            + username_websockets
+            + '/'
+        );
+
+        chamadoSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            var chamado = data['message'];
+
+            if(chamado['metodo'] == 'post')
+            {
+                var novo = {
+                    id: chamado['id'],
+                    descricao: chamado['descricao'],
+                    titulo: chamado['titulo'],
+                    prioridade: chamado['prioridade'],
+                    status: chamado['status'],
+                };
+
+                chamados.push(novo);
+                render_chamados();
+            }
+            else if(chamado['metodo'] == 'put')
+            {
+                var novo = chamados.filter(function(item) {
+                    return item.id == chamado['id'];
+                })[0];
+                novo.descricao = chamado['descricao'];
+                novo.titulo = chamado['titulo'];
+                novo.prioridade = chamado['prioridade'];
+                novo.status = chamado['status'];
+                chamados = chamados.filter(function(item) {
+                    return item.id != chamado['id'];
+                });
+                chamados.push(novo);
+                render_chamados();
+            }
+            else if(chamado['metodo'] == 'delete')
+            {
+                chamados = chamados.filter(function(item) {
+                    return item.id != chamado['id'];
+                });
+                render_chamados();
+            }
+        };
+
+        chamadoSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+
+
+
 </script>
 {% endblock %}

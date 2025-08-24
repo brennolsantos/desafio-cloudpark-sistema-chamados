@@ -25,12 +25,13 @@ SECRET_KEY = 'django-insecure-rs_+!n$nmrixr95olscfm-t&ohsi+asf94)=u2pnw=oo!#7k72
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "channels",
     "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -142,19 +143,11 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://localhost:5173"
-]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ASGI_APPLICATION = "backend.asgi.application"
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
-
 AUTH_USER_MODEL = 'autenticacao.CustomUser'
