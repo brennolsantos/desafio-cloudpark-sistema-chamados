@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-1">
+    <h3 class="h3 col-6 text-center">Edição de Chamado</h3>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
+
+<div class="row justify-content-center mt-3">
+    <div class="card col-6">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="titulo" class="form-label">Título</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" value="{{ chamado.titulo }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="3" required>{{ chamado.descricao }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="setor" class="form-label">Setor</label>
+                    <select class="form-select" id="setor" name="setor" required>
+                        <option disabled selected value>Selecione um setor</option>
+                        <option value="financeiro" {% if chamado.setor == 'financeiro' %}selected{% endif %}>Financeiro</option>
+                        <option value="tecnico" {% if chamado.setor == 'tecnico' %}selected{% endif %}>Técnico</option>
+                        <option value="atendimento" {% if chamado.setor == 'atendimento' %}selected{% endif %}>Atendimento</option>
+                        <option value="rh" {% if chamado.setor == 'rh' %}selected{% endif %}>Recursos Humanos</option>
+                        <option value="marketing" {% if chamado.setor == 'marketing' %}selected{% endif %}>Marketing</option>
+                        <option value="TI" {% if chamado.setor == 'TI' %}selected{% endif %}>TI</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="prioridade" class="form-label">Prioridade</label>
+                    <select class="form-select" id="prioridade" name="prioridade" required>
+                        <option disabled selected value>Selecione uma prioridade</option>
+                        <option value="baixa" {% if chamado.prioridade == 'baixa' %}selected{% endif %}>Baixa</option>
+                        <option value="media" {% if chamado.prioridade == 'media' %}selected{% endif %}>Média</option>
+                        <option value="alta" {% if chamado.prioridade == 'alta' %}selected{% endif %}>Alta</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status" required>
+                        <option disabled selected value>Selecione um status</option>
+                        <option value="aberto" {% if chamado.status == 'aberto' %}selected{% endif %}>Aberto</option>
+                        <option value="ematendimento" {% if chamado.status == 'ematendimento' %}selected{% endif %}>Em Atendimento</option>
+                        <option value="resolvido" {% if chamado.status == 'resolvido' %}selected{% endif %} disabled>Resolvido</option>
+                        <option value="cancelado" {% if chamado.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                    </select>
+                <button type="submit" class="btn btn-primary">Editar</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}'">Cancelar</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

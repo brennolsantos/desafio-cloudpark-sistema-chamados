@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="row justify-content-center mt-5 text-center">
   <h1>Painel de Atendentes</h1>
   <p>Bem-vindo ao sistema de chamados!</p>
+  {% if request.user.is_authenticated %}
+    <button class="btn btn-primary col-4" onclick="window.location.href='/atendentes/chamados/'">Ver Chamados</button>
+  {% else %}
+    <button class="btn btn-primary col-4" onclick="window.location.href='/autenticacao/login/'">Login</button>
+  {% endif %}
+</div>
 {% endblock %}
