@@ -18,7 +18,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
 django_asgi_app = get_asgi_application()
 
-from tecnicos.routing import websocket_urlpatterns
+from atendentes.routing import websocket_urlpatterns
 
 application = ProtocolTypeRouter(
     {
