@@ -66,3 +66,4 @@ Sistema de Chamados - Desafio Técnico CloudPark
 
   3. Frontends básicos usando bootstrap
 
+  4. Comecei o projeto utilizando branchs e pull requests, mas depois tive que acelerar o processo e aumentar o tamanho dos commits devido o prazo apertado
