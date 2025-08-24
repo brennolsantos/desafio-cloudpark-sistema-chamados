@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from .views import LoginView, RegisterView, LogoutView
-from .api import RegisterAPIView
+from .api import RegisterAPIView, VerificarAPIView, UsuarioAPView
 
 app_name = 'autenticacao'
 
@@ -16,4 +16,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/registrar/', RegisterAPIView.as_view(), name='api_registrar'),
+    path('api/verificar/', VerificarAPIView.as_view(), name='api_verificar'),
+    path('api/usuarios/<int:id>/', UsuarioAPView.as_view(), name='api_usuario'),
+    path('api/usuarios/', UsuarioAPView.as_view(), name='api_usuario'),
 ]

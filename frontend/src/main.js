@@ -1,5 +1,13 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
+import router from './router'
 
-createApp(App).mount('#app')
+// Criar a app primeiro
+const app = createApp(App)
+
+// Depois usar os plugins
+app.use(router)
+// Só então montar
+app.mount('#app')
+
+console.log('Vue app initialized successfully')

@@ -65,3 +65,7 @@ class LogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return HttpResponseRedirect('/autenticacao/login/')
+    
+
+    
+    

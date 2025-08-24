@@ -16,9 +16,6 @@ class AuthMiddleware:
                 return HttpResponseRedirect('/atendentes/chamados/')
 
         if '/api/' in full_url:
-            if not request.user.is_authenticated and not 'token' in full_url and not 'registrar' in full_url:
-                return HttpResponseRedirect('/')
-            
             if request.user.is_authenticated and request.user.tipo_user != 'tecnico':
                 return HttpResponseRedirect('/')
 
