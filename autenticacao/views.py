@@ -66,3 +66,6 @@ class LogoutView(View):
         logout(request)
         return HttpResponseRedirect('/autenticacao/login/')
     
+
+    
+    

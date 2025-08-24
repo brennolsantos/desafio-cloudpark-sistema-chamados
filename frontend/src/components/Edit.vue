@@ -37,7 +37,8 @@
                 </div>
                 <div class="form-group mt-3">
                     <label for="usuario" class="text-dark">Usuário</label>
-                    <input type="text" class="form-control" id="usuario" v-model="chamado.usuario" readonly>
+                    <input type="text" class="form-control" id="usuario" v-model="usuario" readonly>
+                    <input type="hidden" class="form-control" id="usuario" v-model="chamado.usuario" readonly>
                 </div>
             </form>
 
@@ -54,7 +55,8 @@ import api from '../services/api';
 export default {
     name: 'Edit',
     data: () => ({
-        chamado: {}
+        chamado: {},
+        usuario: ''
     }),
     created() {
         this.fetchChamado();
@@ -67,11 +69,33 @@ export default {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            this.chamado = response.data.chamado;
+            this.chamado = response.data;
+            this.getUser(this.chamado.usuario);
         },
 
         editar(){
-            }
+            const id = this.$route.params.id;
+            api.put(`/atendentes/api/chamados/${id}/`, this.chamado, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }).then(response => {
+                window.alert('Chamado editado com sucesso!')
+                this.$router.push('/home');
+            }).catch(error => {
+                console.error(error);
+            });
+        },
+        getUser(id){
+            api.get(`/autenticacao/api/usuarios/${id}/`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }).then(response => {
+                this.usuario = response.data.username;
+            }).catch(error => {
+                console.error(error);
+            });
         }
     }
 }

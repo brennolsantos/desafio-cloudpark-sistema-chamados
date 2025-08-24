@@ -1,8 +1,12 @@
-from django.urls import path 
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import ChamadosView, ChamadosCadastroView, ChamadosEditView, CadastroDeleteView
 from .api import ChamadoAPIView
 
 app_name = 'atendentes'
+
+router = DefaultRouter()
+router.register(r'chamados', ChamadoAPIView, basename='api_chamados')
 
 urlpatterns = [
     path('chamados/', ChamadosView.as_view(), name='chamados'),
@@ -10,6 +14,5 @@ urlpatterns = [
     path('chamados/<int:id>/editar/', ChamadosEditView.as_view(), name='chamados_editar'),
     path('chamados/<int:id>/deletar/', CadastroDeleteView.as_view(), name='chamados_deletar'),
     path('chamados/novo/', ChamadosCadastroView.as_view(), name='chamados_novo'),
-    path('api/chamados/', ChamadoAPIView.as_view(), name='api_chamados'),
-    path('api/chamados/<int:id>/', ChamadoAPIView.as_view(), name='api_chamado_detail')
+    path('api/', include(router.urls))
 ]

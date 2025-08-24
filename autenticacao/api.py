@@ -32,3 +32,20 @@ class VerificarAPIView(APIView):
                 response = True 
 
         return Response({'status': response}, status=status.HTTP_200_OK)
+
+class UsuarioAPView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id', None)
+        if not request.user.is_authenticated:
+            return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if id is not None:
+            user = User.objects.filter(id=id).first()
+            if user:
+                serializer = UserSerializer(user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

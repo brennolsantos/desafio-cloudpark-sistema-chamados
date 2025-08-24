@@ -5,5 +5,5 @@ class ChamadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chamado
         required_fields = ['titulo', 'prioridade', 'status']
-        fields = ['id', 'titulo', 'descricao', 'prioridade', 'status', 'data_criacao', 'usuario']
+        fields = ['id', 'titulo', 'descricao', 'prioridade', 'status', 'data_criacao', 'usuario', 'setor']
         read_only_fields = ['id', 'data_criacao', 'usuario']
