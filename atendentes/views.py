@@ -49,6 +49,9 @@ class ChamadosEditView(View):
     def get(self, request, *args, **kwargs):
         context = {}
         id = kwargs.get('id')   
+
+        if request.user.is_authenticated == False:
+            return HttpResponseRedirect('/autenticacao/login/')
         try:
             chamado = Chamado.objects.get(id=id, usuario=request.user)
             context['chamado'] = chamado
@@ -60,6 +63,9 @@ class ChamadosEditView(View):
     def post(self, request, *args, **kwargs):
         context = {}
         id = kwargs.get('id')
+
+        if request.user.is_authenticated == False:
+            return HttpResponseRedirect('/autenticacao/login/')
 
         chamado = Chamado.objects.filter(id=id, usuario=request.user)
 
@@ -112,6 +118,8 @@ class ChamadosEditView(View):
 class ChamadosCadastroView(View):
     def get(self, request, *args, **kwargs):
         context = {}
+        if request.user.is_authenticated == False:
+            return HttpResponseRedirect('/autenticacao/login/')
         return render(request, 'atendentes/chamados_cadastro.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -121,6 +129,9 @@ class ChamadosCadastroView(View):
         prioridade = request.POST.get('prioridade') 
         setor = request.POST.get('setor') 
         status = request.POST.get('status')
+
+        if request.user.is_authenticated == False:
+            return HttpResponseRedirect('/autenticacao/login/')
 
         if status is None or status.strip() == '':
             status = 'aberto'
@@ -170,6 +181,9 @@ class CadastroDeleteView(View):
     def get(self, request, *args, **kwargs):
         context = {}
         id = kwargs.get('id')
+
+        if request.user.is_authenticated == False:
+            return HttpResponseRedirect('/autenticacao/login/')
 
         try:
             chamado = Chamado.objects.get(id=id, usuario=request.user)
