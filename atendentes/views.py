@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.views import View
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from .models import Chamado
 # Create your views here.
 
@@ -10,9 +13,12 @@ class ChamadosView(View):
         context = {}
         status = request.GET.get('status')  
         
-        if request.user.tipo_user != 'atendente' or request.user.is_authenticated == False:
+        if request.user.is_authenticated == False:
             return HttpResponseRedirect('/autenticacao/login/')
         
+        if request.user.tipo_user != 'atendente':
+            return HttpResponseRedirect('/autenticacao/login/')
+
         if id is not None:
             try:
                 chamado = Chamado.objects.get(id=id)
@@ -34,6 +40,8 @@ class ChamadosView(View):
         else:
             context['chamados'] = []
 
+        username_websockets = request.user.get_username().split('@')[0].replace('.', '')
+        context['username_websockets'] = username_websockets
         return render(request, 'atendentes/chamados.html', context)
 
 class ChamadosEditView(View):
@@ -53,10 +61,13 @@ class ChamadosEditView(View):
         context = {}
         id = kwargs.get('id')
 
-        chamado = Chamado.objects.get(id=id, usuario=request.user)
+        chamado = Chamado.objects.filter(id=id, usuario=request.user)
 
-        if not chamado:
+        if not chamado.exists():
             return HttpResponseRedirect('/atendentes/chamados/')
+        
+        chamado = chamado.first()
+
 
         titulo = request.POST.get('titulo')
         descricao = request.POST.get('descricao')
@@ -76,6 +87,25 @@ class ChamadosEditView(View):
         chamado.setor = setor
         chamado.status = status
         chamado.save()
+
+        channel_layer = get_channel_layer()
+        username = request.user.get_username().split('@')[0].replace('.', '')
+
+        async_to_sync(channel_layer.group_send)(
+            f"chamado_{username}",
+            {
+                "type": "chamado.message",
+                "message": {
+                    "id": chamado.id,
+                    "titulo": chamado.titulo,
+                    "descricao": chamado.descricao,
+                    "prioridade": chamado.prioridade,
+                    "setor": chamado.setor,
+                    "status": chamado.status,
+                    'metodo': 'put'
+                },
+            },
+        )   
 
         return HttpResponseRedirect(f'/atendentes/chamados/{chamado.id}/')
 
@@ -111,6 +141,27 @@ class ChamadosCadastroView(View):
         chamado.setor = setor
         chamado.status = status
         chamado.save()
+        print("USERNAME:", request.user.get_username())
+        username = request.user.get_username().split('@')[0].replace('.', '')
+        print("PRIMEIRO NOME:", username)
+
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            f"chamado_{username}",
+            {
+                "type": "chamado.message",
+                "message": {
+                    "id": chamado.id,
+                    "titulo": chamado.titulo,
+                    "descricao": chamado.descricao,
+                    "prioridade": chamado.prioridade,
+                    "setor": chamado.setor,
+                    "status": chamado.status,
+                    'metodo': 'post'
+                },
+            },
+        )
 
         return HttpResponseRedirect('/atendentes/chamados/')
  
@@ -125,6 +176,20 @@ class CadastroDeleteView(View):
             chamado.delete()
         except Chamado.DoesNotExist:
             return HttpResponseRedirect('/atendentes/chamados/')
+        
+        username = request.user.get_username().split('@')[0].replace('.', '')
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            f"chamado_{username}",
+            {
+                "type": "chamado.message",
+                "message": {
+                    "id": id,
+                    "metodo": 'delete'
+                },
+            },
+        )
 
         return HttpResponseRedirect('/atendentes/chamados/')
 

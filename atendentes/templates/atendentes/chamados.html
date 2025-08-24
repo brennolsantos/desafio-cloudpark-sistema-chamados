@@ -4,46 +4,56 @@
 <div class="row justify-content-center mt-1">
     <h5 class="h5 col-6 text-center">Lista de Chamados</h5>
 </div>
-<div class="row justify-content-center mt-3">
-    <div class="col-6 text-center">
-        <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/novo'">Novo Chamado</button>
-    </div>
-</div>
 
 <div class="row justify-content-center mt-3">
-    <div class="col-6 text-center">
+    <div class="col-lg-6 col-md-12 col-sm-12 text-center" style="margin-top:10px;">
         <select id="statusFilter" class="form-select">
             <option disabled selected value>Filtrar por Status</option>
+            <option value="todos">Todos</option>
             <option value="aberto">Abertos</option>
             <option value="ematendimento">Em Atendimento</option>
             <option value="resolvido">Resolvidos</option>
             <option value="cancelado">Cancelados</option>
         </select>
     </div>
-    <button class="btn btn-secondary  col-1 " onclick="filtrar()">Filtrar</button>
+    <button class="btn btn-secondary  col-lg-1 col-sm-12 col-md-12" style="margin-top: 10px;" onclick="filtrar()">Filtrar</button>
+    <button class="btn btn-primary col-lg-3 col-sm-12 col-md-12" style="margin-top: 10px; margin-left: 20px;" onclick="window.location.href='/atendentes/chamados/novo'">Novo Chamado</button>
 </div>
 
-{% for chamado in chamados %}
-<div class="row justify-content-center mt-1">
-    <div class="card col-6 mt-3">
-        <h3 class="card-header {% if chamado.prioridade == 'alta' %}bg-danger text-white{% elif chamado.prioridade == 'media' %}bg-warning{% else %}bg-success{% endif %}">{{ chamado.titulo }}</h3>
-        <div class="card-body">
-            <p class="card-text">{% if chamado.descricao %}{{ chamado.descricao }}{% endif %}</p>
-            <p class="card-text"><small class="text-muted">Setor: {{ chamado.setor }}</small></p>
-            <p class="card-text"><small class="text-muted">Prioridade: {{ chamado.get_prioridade_display }}</small></p>
-            <p class="card-text"><small class="text-muted">Criado em: {{ chamado.data_criacao }}</small></p>
-            <p class="card-text"><small class="text-muted">Status: {{ chamado.get_status_display }}</small></p>
-            <p class="card-text"><small class="text-muted">Criado por: {{ chamado.usuario.username }}</small></p>
-        </div>
-        <div class="card-footer text-end">
-            <button class="btn btn-secondary" style="margin-right: 20px" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/'">Visualizar Chamado</button>
-            <button class="btn btn-primary" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar/'">Editar Chamado</button>
-    </div>
+<div class="row justify-content-center mt-4">
+    {% if chamados|length > 0 %}
+    <table class="table table-bordered col-lg-6 col-md-12 col-sm-12">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Título</th>
+                <th scope="col">Prioridade</th>
+                <th scope="col">Status</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="table-chamados">
+        {% endif %}
+            {% for chamado in chamados %}
+            <tr id="chamado_{{ chamado.id }}">
+                <td id="id_{{ chamado.id }}">{{ chamado.id }}</td>
+                <td id="titulo_{{ chamado.titulo }}">{{ chamado.titulo }}</td>
+                <td id="prioridade_{{ chamado.prioridade }}" style="color: {% if chamado.prioridade == 'alta' %} red {% elif chamado.prioridade == 'media' %} orange {% else %} green {% endif %};">{{ chamado.get_prioridade_display }}</td>
+                <td id="status_{{ chamado.status }}">{{ chamado.get_status_display }}</td>
+                <td>
+                    <button class="btn btn-light btn-sm" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}'"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-light btn-sm" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/editar'"><i class="fa-solid fa-pencil"></i></button>
+                </td>
+            </tr>
+            {% endfor %}
+        {% if chamados|length > 0 %}
+        </tbody>
+    </table>
+    {% endif %}
 </div>
-{% endfor %}
 {% if chamados|length == 0 %}
 <div class="row justify-content-center mt-3">
-    <div class="col-6 text-center">
+    <div class="col-lg-6 col-md-12 col-sm-12 text-center">
         <p>Nenhum chamado encontrado.</p>
     </div>
 </div>
@@ -52,9 +62,170 @@
 
 {% block scripts %}
 <script>
+    var username_websockets = "{{ username_websockets }}";
+    var chamados = [];
+
+    function getDisplayPrioridade(prioridade) {
+        switch (prioridade) {
+            case 'alta':
+                return 'Alta';
+            case 'media':
+                return 'Média';
+            case 'baixa':
+                return 'Baixa';
+            default:
+                return 'Desconhecida';
+        }
+    }
+
+    function getDisplayStatus(status) {
+        switch (status) {
+            case 'aberto':
+                return 'Aberto';
+            case 'ematendimento':
+                return 'Em Atendimento';
+            case 'resolvido':
+                return 'Resolvido';
+            case 'cancelado':
+                return 'Cancelado';
+            default:
+                return 'Desconhecido';
+        }
+    }
+
+    function render_chamados() {
+        var table = document.getElementById("table-chamados");
+        table.innerHTML = "";
+
+        for (var i = 0; i < chamados.length; i++) {
+            var chamado = chamados[i];
+            var row = document.createElement("tr");
+            row.id = "chamado_" + chamado.id;
+
+            var idCell = document.createElement("td");
+            idCell.id = "id_" + chamado.id;
+            idCell.innerHTML = chamado.id;
+            row.appendChild(idCell);
+
+            var tituloCell = document.createElement("td");
+            tituloCell.id = "titulo_" + chamado.id;
+            tituloCell.innerHTML = chamado.titulo;
+            row.appendChild(tituloCell);
+
+            var prioridadeCell = document.createElement("td");
+            prioridadeCell.id = "prioridade_" + chamado.id;
+            prioridadeCell.innerHTML = getDisplayPrioridade(chamado.prioridade);
+            prioridadeCell.style.color = (chamado.prioridade == 'alta') ? 'red' : (chamado.prioridade == 'media') ? 'orange' : 'green';
+            row.appendChild(prioridadeCell);
+
+            var statusCell = document.createElement("td");
+            statusCell.id = "status_" + chamado.id;
+            statusCell.innerHTML = getDisplayStatus(chamado.status);
+            row.appendChild(statusCell);
+
+            var acoesCell = document.createElement("td");
+            var viewButton = document.createElement("button");
+            viewButton.className = "btn btn-light btn-sm";
+            viewButton.onclick = (function(id) {
+                return function() {
+                    window.location.href = '/atendentes/chamados/' + id;
+                };
+            })(chamado.id);
+            viewButton.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            acoesCell.appendChild(viewButton);
+
+            var editButton = document.createElement("button");
+            editButton.className = "btn btn-light btn-sm";
+            editButton.onclick = (function(id) {
+                return function() {
+                    window.location.href = '/atendentes/chamados/' + id + '/editar';
+                };
+            })(chamado.id);
+            editButton.innerHTML = '<i class="fa-solid fa-pencil"></i>';
+            acoesCell.appendChild(editButton);
+
+            row.appendChild(acoesCell);
+            table.appendChild(row);
+        }
+    }
+
+    {% for chamado in chamados %}
+        chamados.push({
+            id: "{{ chamado.id }}",
+            titulo: "{{ chamado.titulo }}",
+            prioridade: "{{ chamado.prioridade }}",
+            status: "{{ chamado.status }}",
+        });
+    {% endfor %}
+
     function filtrar() {
         var status = document.getElementById("statusFilter").value;
-        window.location.href = "{% url 'atendentes:chamados' %}?status=" + status;
+
+        if(status == 'todos')
+        {
+            window.location.href = "{% url 'atendentes:chamados' %}";
+        }
+        else
+        {
+            window.location.href = "{% url 'atendentes:chamados' %}?status=" + status;
+        }
     }
+
+    const chamadoSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chamados/'
+            + username_websockets
+            + '/'
+        );
+
+        chamadoSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            var chamado = data['message'];
+
+            if(chamado['metodo'] == 'post')
+            {
+                var novo = {
+                    id: chamado['id'],
+                    descricao: chamado['descricao'],
+                    titulo: chamado['titulo'],
+                    prioridade: chamado['prioridade'],
+                    status: chamado['status'],
+                };
+
+                chamados.push(novo);
+                render_chamados();
+            }
+            else if(chamado['metodo'] == 'put')
+            {
+                var novo = chamados.filter(function(item) {
+                    return item.id == chamado['id'];
+                })[0];
+                novo.descricao = chamado['descricao'];
+                novo.titulo = chamado['titulo'];
+                novo.prioridade = chamado['prioridade'];
+                novo.status = chamado['status'];
+                chamados = chamados.filter(function(item) {
+                    return item.id != chamado['id'];
+                });
+                chamados.push(novo);
+                render_chamados();
+            }
+            else if(chamado['metodo'] == 'delete')
+            {
+                chamados = chamados.filter(function(item) {
+                    return item.id != chamado['id'];
+                });
+                render_chamados();
+            }
+        };
+
+        chamadoSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+
+
+
 </script>
 {% endblock %}
