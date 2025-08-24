@@ -29,7 +29,10 @@ class ChamadosView(View):
         if status:
             chamados = chamados.filter(status=status)
 
-        context['chamados'] = chamados
+        if chamados.exists():
+            context['chamados'] = chamados
+        else:
+            context['chamados'] = []
 
         return render(request, 'atendentes/chamados.html', context)
 
@@ -111,6 +114,20 @@ class ChamadosCadastroView(View):
 
         return HttpResponseRedirect('/atendentes/chamados/')
  
+
+class CadastroDeleteView(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        id = kwargs.get('id')
+
+        try:
+            chamado = Chamado.objects.get(id=id, usuario=request.user)
+            chamado.delete()
+        except Chamado.DoesNotExist:
+            return HttpResponseRedirect('/atendentes/chamados/')
+
+        return HttpResponseRedirect('/atendentes/chamados/')
+
 class IndexView(View):
 
     def get(self, request, *args, **kwargs):
