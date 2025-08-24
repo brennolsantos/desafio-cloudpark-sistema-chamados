@@ -55,6 +55,7 @@
                         <option value="cancelado" {% if chamado.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
                     </select>
                 <button type="submit" class="btn btn-primary">Editar</button>
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}/deletar/'">Deletar</button>
                 <button type="button" class="btn btn-secondary" onclick="window.location.href='/atendentes/chamados/{{ chamado.id }}'">Cancelar</button>
             </form>
         </div>
